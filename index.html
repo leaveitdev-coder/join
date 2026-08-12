@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your Leave it invite</title>
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100dvh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 2rem 1.25rem;
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #1c1908; background: #f6f5ef; text-align: center;
+  }
+  h1 { font-size: 2.1rem; margin: 0 0 .4rem; }
+  p.sub { color: #6b6754; margin: 0 0 2rem; }
+  .code { display: flex; gap: .45rem; justify-content: center; margin-bottom: .75rem; }
+  .code span {
+    width: 2.6rem; height: 3.2rem; border-radius: .7rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; font-weight: 800;
+    background: rgba(255,255,255,.8); border: 1px solid rgba(58,53,32,.16);
+  }
+  .hint { font-size: .82rem; color: #6b6754; margin: 0 0 2rem; }
+  a.btn {
+    display: block; width: 100%; max-width: 22rem; margin: 0 auto .7rem;
+    padding: 1.05rem 1.2rem; border-radius: 1rem; text-decoration: none;
+    font-weight: 700; font-size: 1.05rem;
+    background: #8a7a2e; color: #fff;
+  }
+  a.btn.ghost { background: rgba(255,255,255,.75); color: #1c1908; border: 1px solid rgba(58,53,32,.16); }
+  @media (prefers-color-scheme: dark) {
+    body { color: #eae7d9; background: #1c1908; }
+    p.sub, .hint { color: #9a9483; }
+    .code span { background: rgba(255,255,255,.07); border-color: rgba(234,231,217,.18); }
+    a.btn.ghost { background: rgba(255,255,255,.08); color: #eae7d9; border-color: rgba(234,231,217,.18); }
+  }
+</style>
+</head>
+<body>
+
+  <h1>Leave it.</h1>
+  <p class="sub">Somebody invited you to a property</p>
+
+  <div class="code" id="code"></div>
+  <p class="hint" id="hint">Your invite code</p>
+
+  <a class="btn" id="open" href="#">Open in Leave it</a>
+  <a class="btn ghost" id="get" href="#">Get the app</a>
+
+<script>
+/*
+ * One link for a text message, and the only file this site has.
+ *
+ * It is deliberately self contained: no stylesheet, no images, and no links
+ * to anything else, so it can never depend on or disturb a page somewhere
+ * else that is already live and already submitted.
+ *
+ * The page draws immediately and stays drawn. An earlier version hid itself
+ * until it decided the app had failed to open, which looked tidier and was
+ * worse: iOS refuses a scheme redirect that no finger asked for, so the
+ * button that was hidden was the only thing that ever worked.
+ *
+ * The proper version of this is a universal link, which opens the app with no
+ * page at all and needs the Apple team id to set up.
+ */
+var APP_STORE = '';   // https://apps.apple.com/app/idXXXXXXXXX once listed
+var PLAY_STORE = '';
+
+var params = new URLSearchParams(location.search);
+var code = (params.get('c') || params.get('code') || '').replace(/[^0-9A-Za-z]/g, '').slice(0, 6);
+var scheme = code ? 'leaveit://join?code=' + code : 'leaveit://';
+
+var box = document.getElementById('code');
+if (code) {
+  code.split('').forEach(function (ch) {
+    var s = document.createElement('span');
+    s.textContent = ch;
+    box.appendChild(s);
+  });
+  box.style.cursor = 'pointer';
+  box.addEventListener('click', function () {
+    navigator.clipboard && navigator.clipboard.writeText(code).then(function () {
+      var h = document.getElementById('hint');
+      h.textContent = 'Code copied';
+      setTimeout(function () { h.textContent = 'Your invite code'; }, 1800);
+    });
+  });
+} else {
+  document.getElementById('hint').textContent = 'Open the app and enter the code you were sent';
+  box.remove();
+}
+
+document.getElementById('open').href = scheme;
+
+var store = /Android/i.test(navigator.userAgent || '') ? PLAY_STORE : APP_STORE;
+var get = document.getElementById('get');
+if (store) {
+  get.href = store;
+} else {
+  get.textContent = 'Coming to the App Store soon';
+  get.removeAttribute('href');
+  get.style.opacity = '.55';
+}
+
+/*
+ * Try to hand over on arrival, once per visit. Coming back from the app would
+ * otherwise bounce straight into it again. A browser that refuses this simply
+ * does nothing, and the button above is already on screen.
+ */
+try {
+  if (sessionStorage.getItem('tried') !== scheme) {
+    sessionStorage.setItem('tried', scheme);
+    setTimeout(function () { location.replace(scheme); }, 350);
+  }
+} catch (e) {}
+</script>
+
+</body>
+</html>
