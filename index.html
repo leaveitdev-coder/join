@@ -70,7 +70,7 @@ var APP_STORE = '';   // https://apps.apple.com/app/idXXXXXXXXX once listed
 var PLAY_STORE = '';
 
 var params = new URLSearchParams(location.search);
-var code = (params.get('c') || params.get('code') || '').replace(/[^0-9A-Za-z]/g, '').slice(0, 6);
+var code = (params.get('c') || params.get('code') || '').replace(/[^0-9A-Za-z]/g, '').slice(0, 7);
 var scheme = code ? 'leaveit://join?code=' + code : 'leaveit://';
 
 var box = document.getElementById('code');
